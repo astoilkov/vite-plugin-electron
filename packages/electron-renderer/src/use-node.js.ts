@@ -218,7 +218,7 @@ export default function useNodeJs(options: UseNodeJsOptions = {}): Plugin {
         if (CJS_modules.includes(source)) return prefix + source
       }
     },
-    load(id) {
+    async load(id) {
       if (env.command === 'serve') {
         /** 
          * ```
@@ -254,7 +254,7 @@ export default function useNodeJs(options: UseNodeJsOptions = {}): Plugin {
           const cache = moduleCache.get(id)
           if (cache) return cache
 
-          const nodeModule = require(id)
+          const nodeModule = await import(id)
           const requireModule = `const _M_ = require("${id}");`
           const exportDefault = `const _D_ = _M_.default || _M_;\nexport { _D_ as default };`
           const exportMembers = Object
