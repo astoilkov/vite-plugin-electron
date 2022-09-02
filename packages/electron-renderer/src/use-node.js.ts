@@ -1,11 +1,18 @@
 import fs from 'fs'
 import path from 'path'
-import { builtinModules } from 'module'
+import { builtinModules, createRequire } from 'module'
 import {
   type Plugin,
   type ConfigEnv,
   normalizePath,
 } from 'vite'
+
+// https://github.com/vitejs/vite/blob/86bf776b1fea26f292163f911fe59ed201d73baf/packages/vite/rollup.config.ts#L264-L273
+const cjs = {
+  // __filename: fileURLToPath(import.meta.url),
+  // __dirname: path.dirname(fileURLToPath(import.meta.url)),
+  require: createRequire(import.meta.url),
+}
 
 export interface UseNodeJsOptions {
   /**
@@ -218,7 +225,7 @@ export default function useNodeJs(options: UseNodeJsOptions = {}): Plugin {
         if (CJS_modules.includes(source)) return prefix + source
       }
     },
-    async load(id) {
+    load(id) {
       if (env.command === 'serve') {
         /** 
          * ```
@@ -254,7 +261,7 @@ export default function useNodeJs(options: UseNodeJsOptions = {}): Plugin {
           const cache = moduleCache.get(id)
           if (cache) return cache
 
-          const nodeModule = await import(id)
+          const nodeModule = cjs.require(id)
           const requireModule = `const _M_ = require("${id}");`
           const exportDefault = `const _D_ = _M_.default || _M_;\nexport { _D_ as default };`
           const exportMembers = Object
@@ -288,14 +295,14 @@ export function resolveModules(root: string, options: UseNodeJsOptions = {}) {
   // Resolve package.json dependencies
   const pkgId = lookupFile('package.json', [root, cwd])
   if (pkgId) {
-    const pkg = require(pkgId)
+    const pkg = cjs.require(pkgId)
     for (const npmPkg of Object.keys(pkg.dependencies || {})) {
       const _pkgId = lookupFile(
         'package.json',
         [root, cwd].map(r => `${r}/node_modules/${npmPkg}`),
       )
       if (_pkgId) {
-        const _pkg = require(_pkgId)
+        const _pkg = cjs.require(_pkgId)
         if (_pkg.type === 'module') {
           ESM_deps.push(npmPkg)
           continue
