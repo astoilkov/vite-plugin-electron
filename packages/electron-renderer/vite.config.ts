@@ -15,12 +15,12 @@ export default defineConfig({
     },
     rollupOptions: {
       external: [
+        'vite',
         ...builtinModules
           .filter(m => !m.startsWith('_'))
           .map(m => [m, `node:${m}`])
           .flat(),
         ...Object.keys(pkg.dependencies),
-        'vite',
       ],
     },
   },

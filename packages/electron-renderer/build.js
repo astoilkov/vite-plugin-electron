@@ -25,14 +25,7 @@ const es_dir = path.join(__dirname, 'es');
 })();
 
 function dev() {
-  const cp1 = run('dev:es');
-  const cp2 = run('dev:cjs');
-  error(cp1);
-  error(cp2);
-  stdout(cp1);
-  stdout(cp2);
-
-  cp1.stdout.on('data', chunk => {
+  stdout(error(run('dev:es'))).stdout.on('data', chunk => {
     // 10:09:29 AM - Found 0 errors. Watching for file changes.
     if (chunk.toString().includes('Found 0 errors. Watching for file changes')) {
       setTimeout(() => {
@@ -42,6 +35,7 @@ function dev() {
       }, 99);
     }
   });
+  stdout(error(run('dev:cjs')));
 }
 
 /**
@@ -49,24 +43,17 @@ function dev() {
  */
 function build() {
   return new Promise(resolve => {
-    const cp1 = run('build:es');
-    const cp2 = run('build:cjs');
-    error(cp1);
-    error(cp2);
-    stdout(cp1);
-    stdout(cp2);
-
     const status = [-1, -1];
     function done() {
       if (status.every(e => e !== -1)) {
         resolve(status);
       }
     }
-    cp1.on('exit', code => {
+    stdout(error(run('build:es'))).on('exit', code => {
       status[0] = code;
       done();
     });
-    cp2.on('exit', code => {
+    stdout(error(run('build:cjs'))).on('exit', code => {
       status[1] = code;
       done();
     });
@@ -79,7 +66,7 @@ function run(args = []) {
 }
 
 /**
- * @type {(cp: import('child_process').ChildProcess) => void}
+ * @type {(cp: import('child_process').ChildProcess) => typeof cp}
  */
 function error(cp) {
   cp.on('error', error => {
@@ -87,13 +74,15 @@ function error(cp) {
     console.log(error);
     process.exit(1);
   });
+  return cp;
 }
 
 /**
- * @type {(cp: import('child_process').ChildProcess) => void}
+ * @type {(cp: import('child_process').ChildProcess) => typeof cp}
  */
 function stdout(cp) {
   cp.stdout.pipe(process.stdout);
+  return cp;
 }
 
 // https://github.com/microsoft/TypeScript/issues/40878
