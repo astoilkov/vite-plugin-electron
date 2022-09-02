@@ -25,5 +25,6 @@
     "vite-plugin-electron": "workspace:*",
     "vite-plugin-esmodule": "^1.4.1",
     "vite": "^3.0.9"
-  }
+  },
+  "type": "module"
 }
