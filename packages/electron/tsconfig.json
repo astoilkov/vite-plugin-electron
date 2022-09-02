@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2019",
-    "module": "CommonJS",
+    "module": "ESNext",
     "esModuleInterop": true,
     "moduleResolution": "Node",
     "resolveJsonModule": true,
@@ -10,7 +10,7 @@
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
-    "outDir": "dist"
+    "outDir": "types"
   },
-  "include": ["src/**/*.ts", "electron-env.d.ts"]
+  "include": ["src", "electron-env.d.ts"]
 }
