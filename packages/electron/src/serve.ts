@@ -1,4 +1,7 @@
+import path from 'path'
 import { spawn } from 'child_process'
+import { createRequire } from 'module'
+import { fileURLToPath } from 'url'
 import {
   type Plugin,
   type ViteDevServer,
@@ -15,6 +18,13 @@ import {
   checkPkgMain,
   resolveEnv,
 } from './config'
+
+// https://github.com/vitejs/vite/blob/86bf776b1fea26f292163f911fe59ed201d73baf/packages/vite/rollup.config.ts#L264-L273
+const cjs = {
+  __filename: fileURLToPath(import.meta.url),
+  __dirname: path.dirname(fileURLToPath(import.meta.url)),
+  require: createRequire(import.meta.url),
+}
 
 /**
  * Custom start plugin
@@ -34,7 +44,7 @@ export function onstart(onstart?: () => void): Plugin {
 }
 
 export async function bootstrap(config: Configuration, server: ViteDevServer) {
-  const electronPath = require('electron')
+  const electronPath = cjs.require('electron')
   const { config: viteConfig } = server
 
   // ---- Electron-Preload ----

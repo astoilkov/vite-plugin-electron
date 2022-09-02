@@ -1,6 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 import type { AddressInfo } from 'net'
+import { createRequire } from 'module'
+import { fileURLToPath } from 'url'
 import {
   type InlineConfig,
   type ResolvedConfig,
@@ -16,6 +18,13 @@ export interface Runtime {
   proc: 'main' | 'preload'
   config: Configuration
   viteConfig: ResolvedConfig
+}
+
+// https://github.com/vitejs/vite/blob/86bf776b1fea26f292163f911fe59ed201d73baf/packages/vite/rollup.config.ts#L264-L273
+const cjs = {
+  __filename: fileURLToPath(import.meta.url),
+  __dirname: path.dirname(fileURLToPath(import.meta.url)),
+  require: createRequire(import.meta.url),
 }
 
 export function resolveRuntime(
@@ -62,8 +71,8 @@ export function resolveBuildConfig(runtime: Runtime): InlineConfig {
     // TODO: consider also support `build.rollupOptions`
     defaultConfig.build.lib = {
       entry: config[proc].entry,
-      formats: ['cjs'],
-      fileName: () => '[name].js',
+      formats: ['cjs', 'es'],
+      fileName: format => `[name].${format === 'cjs' ? 'cjs' : 'js'}`,
     }
   }
 
@@ -127,7 +136,7 @@ export function checkPkgMain(runtime: Runtime, electronMainBuildResolvedConfig: 
     + '.js')
 
   let message: string
-  const pkg = require(pkgId)
+  const pkg = cjs.require(pkgId)
   if (!(pkg.main && distfile.endsWith(pkg.main))) {
     message = `
 [${new Date().toLocaleString()}]
