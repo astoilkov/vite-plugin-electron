@@ -3,16 +3,16 @@ import type { Plugin, ResolvedConfig } from 'vite'
 import { bootstrap, onstart } from './serve'
 import { build } from './build'
 import renderer from 'vite-plugin-electron-renderer'
-import buildConfig from 'vite-plugin-electron-renderer/plugins/build-config'
+import buildConfig from 'vite-plugin-electron-renderer/es/build-config'
 
 // public export
 export {
   type Configuration,
   onstart,
+  defineConfig,
 }
-export function defineConfig(config: Configuration) {
-  return config
-}
+
+function defineConfig(config: Configuration) { return config }
 
 export default function electron(config: Configuration): Plugin[] {
   const name = 'vite-plugin-electron'
